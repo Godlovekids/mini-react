@@ -20,6 +20,39 @@ const createTextNode = (text) => {
   }
 }
 
+const createDom = (type) => {
+  return type === 'TEXT_NODE' ? document.createTextNode('') : document.createElement(type)
+}
+
+const updateProps = (dom, props) => {
+  Object.keys(props).forEach(key => {
+    if(key !== 'children') {
+      dom[key] = props[key]
+    }
+  })
+}
+
+const initChildren = (fiber) => {
+  let children = fiber.props.children
+  let prevChild = null
+  children.forEach((child,index) => {
+    const newFiber = {
+      type: child.type,
+      props: child.props,
+      child: null,
+      parent: fiber,
+      sibling: null,
+      dom: null
+    }
+    if(index === 0) {
+      fiber.child = newFiber
+    } else {
+      prevChild.sibling = newFiber
+    }
+    prevChild = newFiber
+  })
+}
+
 const render = (el, container) => {
 
   nextWorkUnit = {
@@ -41,45 +74,24 @@ function workLoop (IdleDeadline) {
   requestIdleCallback(workLoop)
 }
 
-function performanceWorkUnit(work) {
-  if(!work.dom) {
+function performanceWorkUnit(fiber) {
+  if(!fiber.dom) {
     // 1.创建DOM
-    let dom = (work.dom = work.type === 'TEXT_NODE' ? document.createTextNode('') : document.createElement(work.type)) 
+    let dom = (fiber.dom = createDom(fiber.type)) 
 
-    work.parent.dom.append(dom)
+    fiber.parent.dom.append(dom)
     // 2.处理props
-    Object.keys(work.props).forEach(key => {
-      if(key !== 'children') {
-        dom[key] = work.props[key]
-      }
-    })
+    updateProps(dom, fiber.props)
   }
   // 3.转换链表
-  let children = work.props.children
-  let prevChild = null
-  children.forEach((child,index) => {
-    const newWork = {
-      type: child.type,
-      props: child.props,
-      child: null,
-      parent: work,
-      sibling: null,
-      dom: null
-    }
-    if(index === 0) {
-      work.child = newWork
-    } else {
-      prevChild.sibling = newWork
-    }
-    prevChild = newWork
-  })
+  initChildren(fiber)
   // 4.返回下一个执行任务
-  if(work.child) {
-    return work.child
-  } else if(work.sibling) {
-    return work.sibling
+  if(fiber.child) {
+    return fiber.child
+  } else if(fiber.sibling) {
+    return fiber.sibling
   } else {
-    return work.parent && work.parent.sibling
+    return fiber.parent && fiber.parent.sibling
   }
 }
 
