@@ -99,19 +99,31 @@ function commitWork(fiber) {
   if (fiber.sibling) commitWork(fiber.sibling)
 }
 
-function performanceWorkUnit(fiber) {
-  let isFunctionComponent = typeof fiber.type === 'function'
-  if (isFunctionComponent) {
-
-  }
-  if (!fiber.dom && !isFunctionComponent) {
-    let dom = (fiber.dom = createDom(fiber.type))
-
-    updateProps(dom, fiber.props)
-  }
-  let children = isFunctionComponent ? [fiber.type(fiber.props)] : fiber.props.children
+function updateFunctionComponent (fiber) {
+  let children = [fiber.type(fiber.props)]
 
   initChildren(fiber, children)
+}
+function updateOriginComponent (fiber) {
+  if(!fiber.dom) {
+    const dom = fiber.dom = createDom(fiber.type)
+    updateProps(dom, fiber.props)
+  }
+  let children = fiber.props.children
+
+  initChildren(fiber, children)
+}
+
+function performanceWorkUnit(fiber) {
+  let isFunctionComponent = typeof fiber.type === 'function'
+
+  if(isFunctionComponent) {
+    updateFunctionComponent(fiber)
+  } else {
+    updateOriginComponent(fiber)
+  }
+
+  
   if (fiber.child) {
     return fiber.child
   }   
