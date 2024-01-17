@@ -50,7 +50,7 @@ const updateProps = (dom, nextProps, prevProps) => {
   })
 }
 
-const initChildren = (fiber, children) => {
+const reconcileChildren = (fiber, children) => {
   let oldFiber = fiber.alternate?.child
   let prevChild = null
   children.forEach((child, index) => {
@@ -97,17 +97,17 @@ const initChildren = (fiber, children) => {
 
 const render = (el, container) => {
 
-  nextWorkUnit = {
+  wipRoot = {
     dom: container,
     props: {
       children: [el]
     }
   }
-  root = nextWorkUnit
+  nextWorkUnit = wipRoot
 
 }
 
-let root = null
+let wipRoot = null
 let currentRoot = null
 let nextWorkUnit = null
 function workLoop(IdleDeadline) {
@@ -116,16 +116,16 @@ function workLoop(IdleDeadline) {
     nextWorkUnit = performanceWorkUnit(nextWorkUnit)
     shouldYield = IdleDeadline.timeRemaining() < 1
   }
-  if (!nextWorkUnit && root) {
+  if (!nextWorkUnit && wipRoot) {
     commitRoot()
   }
   requestIdleCallback(workLoop)
 }
 
 function commitRoot() {
-  commitWork(root.child)
-  currentRoot = root
-  root = null
+  commitWork(wipRoot.child)
+  currentRoot = wipRoot
+  wipRoot = null
 }
 
 function commitWork(fiber) {
@@ -148,7 +148,7 @@ function commitWork(fiber) {
 function updateFunctionComponent(fiber) {
   let children = [fiber.type(fiber.props)]
 
-  initChildren(fiber, children)
+  reconcileChildren(fiber, children)
 }
 function updateOriginComponent(fiber) {
   if (!fiber.dom) {
@@ -157,7 +157,7 @@ function updateOriginComponent(fiber) {
   }
   let children = fiber.props.children
 
-  initChildren(fiber, children)
+  reconcileChildren(fiber, children)
 }
 
 function performanceWorkUnit(fiber) {
@@ -188,12 +188,12 @@ requestIdleCallback(workLoop)
 
 const update = () => {
 
-  nextWorkUnit = {
+  wipRoot = {
     dom: currentRoot.dom,
     props: currentRoot.props,
     alternate: currentRoot
   }
-  root = nextWorkUnit
+  nextWorkUnit = wipRoot
 
 }
 
