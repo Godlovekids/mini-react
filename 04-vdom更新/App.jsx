@@ -1,9 +1,12 @@
 import React from "./core/React.js"
+let count = 1
 function Counter ({num}) {
-  return <div onClick={handleClick}>conuttttttttt{num}</div>
+  return <div onClick={handleClick}>conuttttttttt{count}</div>
 }
 function handleClick () {
+  count++
   console.log(123)
+  React.update()
 }
 function CounterContanier () {
   return <Counter></Counter>
