@@ -125,10 +125,16 @@ let wipRoot = null
 let currentRoot = null
 let nextWorkUnit = null
 let deletions = []
+let wipFiber = null
 function workLoop(IdleDeadline) {
   let shouldYield = false
   while (!shouldYield && nextWorkUnit) {
     nextWorkUnit = performanceWorkUnit(nextWorkUnit)
+
+    if(wipRoot?.sibling?.type === nextWorkUnit?.type) {
+      nextWorkUnit = undefined
+    }
+
     shouldYield = IdleDeadline.timeRemaining() < 1
   }
   if (!nextWorkUnit && wipRoot) {
@@ -175,6 +181,8 @@ function commitWork(fiber) {
 }
 
 function updateFunctionComponent(fiber) {
+
+  wipFiber = fiber
   let children = [fiber.type(fiber.props)]
 
   reconcileChildren(fiber, children)
@@ -216,13 +224,14 @@ function performanceWorkUnit(fiber) {
 requestIdleCallback(workLoop)
 
 const update = () => {
-
-  wipRoot = {
-    dom: currentRoot.dom,
-    props: currentRoot.props,
-    alternate: currentRoot
+  let currentFiber = wipFiber
+  return () => {
+    wipRoot = {
+      ...currentFiber,
+      alternate: currentFiber
+    }
+    nextWorkUnit = wipRoot
   }
-  nextWorkUnit = wipRoot
 
 }
 
