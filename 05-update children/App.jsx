@@ -22,12 +22,13 @@ function Counter ({num}) {
     </div>
   }
   let two = <div>two</div>
+  let three = <div>three</div>
   function handleClick () {
     toggle = !toggle
     console.log(123)
     React.update()
   }
-  return (<div><div>{toggle ? <One/> : two}</div><button onClick={handleClick}>conuttttttttt</button></div>)
+  return (<div><div>{toggle ? <One/> : two}{toggle && three}</div><button onClick={handleClick}>conuttttttttt</button></div>)
 }
 
 function App () {
