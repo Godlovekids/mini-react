@@ -41,6 +41,7 @@ const updateProps = (dom, nextProps, prevProps) => {
       if (nextProps[key] !== prevProps[key]) {
         if (key.startsWith('on')) {
           let eventType = key.toLowerCase().slice(2)
+          dom.removeEventListener(eventType, prevProps[key])
           dom.addEventListener(eventType, nextProps[key])
         } else {
           dom[key] = nextProps[key]
@@ -99,6 +100,11 @@ const reconcileChildren = (fiber, children) => {
 
     prevChild = newFiber
   })
+
+  while(oldFiber) {
+    deletions.push(oldFiber)
+    oldFiber = oldFiber.sibling
+  }
 }
 
 const render = (el, container) => {
