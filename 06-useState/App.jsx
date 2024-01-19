@@ -6,6 +6,7 @@ function Foo() {
   function handleClick() {
     setCount(c => c+1)
     setBar(c => c+1)
+    setBar('322222')
   }
   return (<div><h1>foo</h1>{count}<br></br>{bar}<button onClick={handleClick}>click</button></div>)
 }
